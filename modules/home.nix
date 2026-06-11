@@ -12,9 +12,11 @@
 
   programs.git = {
     enable = true;
-    userName = "Chie Amano";
-    userEmail = "achse603@gmail.com";
-    extraConfig = {
+    settings = {
+      user = {
+        name = "Chie Amano";
+        email = "achse603@gmail.com";
+      };
       ghq.root = "~/ghq";
     };
   };
