@@ -4,8 +4,9 @@
   home.stateVersion = "26.05";
 
   home.packages = with pkgs; [
-    pixi
     ghq
+    ollama
+    pixi
   ];
 
   programs.home-manager.enable = true;
