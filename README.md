@@ -1,35 +1,38 @@
 # nix-config
 
-Chieの MacBook Pro 開発環境設定です。
-Nix + nix-darwin + home-manager を使って、Python/R 開発環境とローカル LLM 環境を構築します。
+macOS development environment for Chie's MacBook Pro, managed with Nix + nix-darwin + home-manager.
 
-## この設定でできること
+## What this sets up
 
-- **Python / R 開発環境**：[Pixi](https://pixi.sh) でプロジェクトごとに再現性のある環境を作成
-- **ローカル LLM**：[Ollama](https://ollama.com) でローカルで大規模言語モデルを実行
-- **LLM Web UI**：[Open WebUI](https://docs.openwebui.com) でブラウザから ChatGPT 風に LLM を使用（翻訳・文法修正など）
-- **VS Code**：コードエディタ
-
-## セットアップ手順
-
-### 前提条件
-
-- macOS がインストールされた Apple Silicon Mac
-- インターネット接続
+| Module | Contents | Audience |
+|--------|----------|----------|
+| `home-llm.nix` | Ollama, Colima, Docker CLI, launchd auto-start | Everyone |
+| `home-dev.nix` | git, Pixi, VS Code, ghq, zsh | Developers |
+| `home-personal.nix` | Personal tools (tmux, vim, …) | Chie only |
+| `home.nix` | Full setup — imports all three above | Chie only |
 
 ---
 
-### ステップ 1：Nix のインストール
+## Setup — Chie's full environment
 
-ターミナル（`アプリケーション > ユーティリティ > ターミナル`）を開き、以下のコマンドを実行します。
+### Prerequisites
+
+- Apple Silicon Mac with macOS installed
+- Internet connection
+
+---
+
+### Step 1 — Install Nix
+
+Open Terminal (`Applications > Utilities > Terminal`) and run:
 
 ```bash
 curl -sSfL https://artifacts.nixos.org/nix-installer | sh -s -- install --enable-flakes
 ```
 
-インストール完了後、**ターミナルを一度閉じて再度開いてください**。
+Close and reopen the terminal when the installer finishes.
 
-動作確認：
+Verify:
 
 ```bash
 nix --version
@@ -37,45 +40,7 @@ nix --version
 
 ---
 
-### ステップ 2：設定ファイルのカスタマイズ
-
-#### Mac のユーザー名を確認する
-
-```bash
-whoami
-```
-
-表示されたユーザー名が `Chie` でない場合は、`modules/home.nix` の以下の 2 箇所を変更してください：
-
-```nix
-home.username = "Chie";        # ← whoami の結果に変更
-home.homeDirectory = "/Users/Chie";  # ← /Users/あなたのユーザー名 に変更
-```
-
-#### Mac のホスト名を確認する
-
-```bash
-scutil --get LocalHostName
-```
-
-`flake.nix` の `"chie-macbook"` の部分を、表示されたホスト名に変更してください：
-
-```nix
-darwinConfigurations."Chies-MacBook-Pro" = ...
-# ↑ ここを scutil --get LocalHostName の結果に変更
-```
-
-#### Git のメールアドレスを設定する
-
-`modules/home.nix` の以下の行を変更してください：
-
-```nix
-userEmail = "achse603@gmail.com"; # ← 実際のメールアドレスに変更
-```
-
----
-
-### ステップ 3：このリポジトリを取得する
+### Step 2 — Clone this repository
 
 ```bash
 nix run nixpkgs#ghq get github.com/chie-amano/nix-config
@@ -84,51 +49,59 @@ cd ~/ghq/github.com/chie-amano/nix-config
 
 ---
 
-### ステップ 4：設定を適用する
+### Step 3 — Verify your hostname and username
 
-初回のみ、nix-darwin のインストーラーを使います：
+```bash
+scutil --get LocalHostName   # must match the key in flake.nix
+whoami                       # must match home.username in home.nix
+```
+
+If they differ, update `flake.nix` and `modules/home.nix` accordingly.
+
+---
+
+### Step 4 — Apply the configuration
+
+First time only:
 
 ```bash
 sudo nix run nix-darwin -- switch --flake .#Chies-MacBook-Pro
 ```
 
-> `Chies-MacBook-Pro` の部分は、ステップ 2 で確認したホスト名に合わせてください。
-
-2 回目以降（設定を更新したとき）：
+Subsequent updates:
 
 ```bash
+nix flake update
 sudo darwin-rebuild switch --flake .#Chies-MacBook-Pro
 ```
 
+> `nix flake update` updates `flake.lock` as your own user (not root) before running `darwin-rebuild` as root. This keeps `flake.lock` owned by you.
+
 ---
 
-### ステップ 5：LLM モデルをダウンロードする
+### Step 5 — Download LLM models
 
-Ollama は自動起動するよう設定されています。以下のコマンドでモデルをダウンロードします。
-
-**日本語の翻訳・文法修正におすすめのモデル（どちらか 1 つでも OK）：**
+Ollama starts automatically. Pull one or both of these recommended models for translation and grammar correction:
 
 ```bash
-# 高品質・多言語対応（約 15 GB、ダウンロードに時間がかかります）
+# High quality, multilingual (~15 GB — takes a while)
 ollama pull gemma3:27b
 
-# 軽量・高速（約 8 GB）
+# Lighter and faster (~8 GB)
 ollama pull qwen2.5:14b
 ```
 
 ---
 
-### ステップ 6：Open WebUI を起動する
+### Step 6 — Start Open WebUI
 
-Colima（Docker の実行環境）は Nix によって自動起動するよう設定されています。
-**初回のみ** VM イメージのダウンロードに数分かかります。以下のコマンドで起動を待ちます：
+Colima starts automatically at login. The first boot downloads a VM image — wait for it:
 
 ```bash
-# Colima が起動するまで待つ（Starting... → Running と表示されたら OK）
-colima status
+colima status   # wait until status shows "Running"
 ```
 
-起動を確認したら Open WebUI を起動します：
+Then start Open WebUI (run once; Docker restarts it automatically after that):
 
 ```bash
 docker run -d \
@@ -140,121 +113,149 @@ docker run -d \
   ghcr.io/open-webui/open-webui:main
 ```
 
-Mac 再起動後は Colima と Open WebUI が自動的に立ち上がります。
-
-ブラウザで [http://localhost:3000](http://localhost:3000) を開くと、ChatGPT 風の画面が表示されます。
-モデルを選択して翻訳・文法修正などに使えます。
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 設定の更新方法
+## Setup — Colleagues (LLM environment only)
 
-このリポジトリの設定を変更したあとは：
+This gives you Ollama + Open WebUI without touching your existing git or other tools.
+
+### Prerequisites
+
+- Apple Silicon Mac
+- git (from Xcode Command Line Tools — run `xcode-select --install` if needed)
+
+### Step 1 — Install Nix
+
+```bash
+curl -sSfL https://artifacts.nixos.org/nix-installer | sh -s -- install --enable-flakes
+```
+
+Reopen the terminal when done.
+
+### Step 2 — Clone this repository
+
+```bash
+git clone https://github.com/chie-amano/nix-config.git ~/ghq/github.com/chie-amano/nix-config
+cd ~/ghq/github.com/chie-amano/nix-config
+```
+
+### Step 3 — Add your configuration to flake.nix
+
+Find the commented-out template near the bottom of `flake.nix` and uncomment it.
+Replace two values:
+
+| Placeholder | How to find your value |
+|-------------|----------------------|
+| `your-macbook` | `scutil --get LocalHostName` |
+| `yourname` | `whoami` |
+
+### Step 4 — Apply
+
+```bash
+sudo nix run nix-darwin -- switch --flake .#your-macbook
+```
+
+### Step 5 — Download a model and start Open WebUI
+
+Same as steps 5–6 above.
+
+---
+
+## Updating the configuration
 
 ```bash
 cd ~/ghq/github.com/chie-amano/nix-config
-nix flake update   # flake.lock を自分のユーザーで更新（rootにならないように）
+nix flake update
 sudo darwin-rebuild switch --flake .#Chies-MacBook-Pro
 ```
 
-nixpkgs のバージョンは固定されているので、`nix flake update` を頻繁に実行する必要はありません。実行すると nixpkgs・nix-darwin・home-manager がすべて最新に更新されます。
-
 ---
 
-## Python / R プロジェクトの使い方
+## Using Pixi for Python / R projects
 
-各プロジェクトのフォルダで Pixi を使います。詳細は [Pixi 公式ドキュメント](https://pixi.sh/latest/) を参照してください。
+See the [Pixi documentation](https://pixi.sh/latest/) for full details.
 
 ```bash
-# 新しいプロジェクトを始める
 pixi init my-project
 cd my-project
 
-# パッケージを追加する（例：Python データ分析）
+# Add packages
 pixi add python pandas matplotlib jupyterlab
 
-# 環境を起動する
+# Enter the environment
 pixi shell
 
-# JupyterLab を起動する
+# Start JupyterLab
 jupyter lab
 ```
 
 ---
 
-## ファイル構成
+## Repository layout
 
 ```
 .
-├── flake.nix          # Nix Flake のエントリポイント
+├── flake.nix               # entry point; also contains colleague template
 ├── modules/
-│   ├── darwin.nix     # nix-darwin の最小設定
-│   └── home.nix       # home-manager でインストールするツール
+│   ├── darwin.nix          # minimal nix-darwin system settings
+│   ├── home-llm.nix        # LLM environment (shareable)
+│   ├── home-dev.nix        # development tools (shareable)
+│   ├── home-personal.nix   # personal tools — Chie only
+│   └── home.nix            # Chie's full setup (imports all three)
 ├── docs/
-│   └── adr/           # 設計上の意思決定記録
+│   └── adr/                # architecture decision records
 └── README.md
 ```
 
 ---
 
-## トラブルシューティング
+## Troubleshooting
 
-### Open WebUI が開かない
+### Open WebUI is not loading
 
 ```bash
-# Open WebUI コンテナの状態を確認する
 docker ps -a --filter name=open-webui
-
-# ログを確認する
 docker logs open-webui
 ```
 
-### Open WebUI を手動で再起動する
+### Restart Open WebUI manually
 
 ```bash
 docker restart open-webui
 ```
 
-### Colima が起動していない
+### Colima is not running
 
 ```bash
-# ログを確認する
 cat /tmp/colima.log
-
-# 手動で起動する
 colima start
-
-# 状態を確認する
 colima status
 ```
 
-### Ollama が応答しない
+### Ollama is not responding
 
 ```bash
-# ログを確認する
 cat /tmp/ollama.log
-
-# Ollama を手動で再起動する
-launchctl unload ~/Library/LaunchAgents/org.nixos.ollama.plist
-launchctl load ~/Library/LaunchAgents/org.nixos.ollama.plist
+launchctl unload ~/Library/LaunchAgents/org.nix-community.home.ollama.plist
+launchctl load  ~/Library/LaunchAgents/org.nix-community.home.ollama.plist
 ```
 
 ---
 
-## Nix のアンインストール方法
+## Uninstalling
 
-この環境をすべて削除したい場合は以下を実行します。
-
-### ステップ 1：nix-darwin を削除する
+### Step 1 — Remove nix-darwin
 
 ```bash
 nix --extra-experimental-features "nix-command flakes" run nix-darwin#darwin-uninstaller
 ```
 
-### ステップ 2：Nix 本体を削除する
+### Step 2 — Remove Nix
 
 ```bash
 /nix/nix-installer uninstall
 ```
 
-ターミナルを再起動すると、Mac が Nix をインストール前の状態に戻ります。
+Reopen the terminal and your Mac is back to its pre-Nix state.
