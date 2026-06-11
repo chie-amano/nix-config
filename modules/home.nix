@@ -1,7 +1,7 @@
 { pkgs, ... }: {
   home.username = "Chie";
   home.homeDirectory = "/Users/Chie";
-  home.stateVersion = "26.05";
+  home.stateVersion = "26.11";
 
   home.packages = with pkgs; [
     pixi
