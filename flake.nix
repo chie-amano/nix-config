@@ -14,6 +14,8 @@
   };
 
   outputs = { self, nixpkgs, nix-darwin, home-manager, ... }: {
+
+    # Chie's full setup
     darwinConfigurations."Chies-MacBook-Pro" = nix-darwin.lib.darwinSystem {
       system = "aarch64-darwin";
       modules = [
@@ -26,5 +28,34 @@
         }
       ];
     };
+
+    # -------------------------------------------------------------------------
+    # Template for colleagues who only need the local LLM environment.
+    # Steps:
+    #   1. Replace "your-macbook" with: scutil --get LocalHostName
+    #   2. Replace "yourname" with: whoami
+    #   3. Run: sudo nix run nix-darwin -- switch --flake .#your-macbook
+    # -------------------------------------------------------------------------
+    # darwinConfigurations."your-macbook" = nix-darwin.lib.darwinSystem {
+    #   system = "aarch64-darwin";
+    #   modules = [
+    #     ./modules/darwin.nix
+    #     home-manager.darwinModules.home-manager
+    #     {
+    #       home-manager.useGlobalPkgs = true;
+    #       home-manager.useUserPackages = true;
+    #       home-manager.users.yourname = {
+    #         imports = [ ./modules/home-llm.nix ];
+    #         home.username = "yourname";
+    #         home.homeDirectory = "/Users/yourname";
+    #         home.stateVersion = "26.05";
+    #       };
+    #       users.users.yourname = {
+    #         home = "/Users/yourname";
+    #       };
+    #     }
+    #   ];
+    # };
+
   };
 }
