@@ -3,9 +3,9 @@
   programs.home-manager.enable = true;
 
   home.packages = with pkgs; [
-    colima
-    docker
-    ollama
+    colima  # Container runtimes on macOS
+    docker  # Container
+    ollama  # Local LLM server
   ];
 
   # Start Colima (Docker runtime) at login

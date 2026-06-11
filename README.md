@@ -11,6 +11,12 @@ macOS development environment for Chie's MacBook Pro, managed with Nix + nix-dar
 | `home-personal.nix` | Personal tools (tmux, vim, …) | Chie only |
 | `home.nix` | Full setup — imports all three above | Chie only |
 
+The specific applications to be installed are described in each module file.
+
+If you want to install the minimum necessary configuration to run Local LLM,
+modify the section for Chie in `flake.nix` to refer to the commented-out section.
+(This is explained in Step 3.)
+
 ---
 
 ## Setup — Chie's full environment
@@ -23,6 +29,10 @@ macOS development environment for Chie's MacBook Pro, managed with Nix + nix-dar
 ---
 
 ### Step 1 — Install Nix
+
+Nix is an open-source package manager that automatically installs and configures
+applications specified in Nix files.
+We will install it using [the official Nix installer](https://github.com/NixOS/nix-installer).
 
 Open Terminal (`Applications > Utilities > Terminal`) and run:
 
@@ -42,6 +52,8 @@ nix --version
 
 ### Step 2 — Clone this repository
 
+The following command copies the files from this GitHub repository to your local machine.
+
 ```bash
 nix run nixpkgs#ghq get github.com/chie-amano/nix-config
 cd ~/ghq/github.com/chie-amano/nix-config
@@ -50,6 +62,9 @@ cd ~/ghq/github.com/chie-amano/nix-config
 ---
 
 ### Step 3 — Verify your hostname and username
+
+Check the hostname (computer name) and username of your MacBook Pro.
+The Nix package manager will need this information when installing applications.
 
 ```bash
 scutil --get LocalHostName   # must match the key in flake.nix
@@ -65,12 +80,14 @@ If they differ, update `flake.nix` and `modules/home.nix` accordingly.
 First time only:
 
 ```bash
+# Replace #Chies-MacBook-Pro to your LocalHostName before run the following command.
 sudo nix run nix-darwin -- switch --flake .#Chies-MacBook-Pro
 ```
 
 Subsequent updates:
 
 ```bash
+# Replace #Chies-MacBook-Pro to your LocalHostName before run the following command.
 nix flake update
 sudo darwin-rebuild switch --flake .#Chies-MacBook-Pro
 ```
