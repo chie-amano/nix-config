@@ -42,19 +42,4 @@
     };
   };
 
-  # Start Open WebUI in background (http://localhost:8080)
-  launchd.agents.open-webui = {
-    enable = true;
-    config = {
-      ProgramArguments = [ "${pkgs.open-webui}/bin/open-webui" "serve" "--port" "8080" ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      EnvironmentVariables = {
-        OLLAMA_BASE_URL = "http://127.0.0.1:11434";
-        WEBUI_AUTH = "False"; # No auth, Local use only.
-      };
-      StandardOutPath = "/tmp/open-webui.log";
-      StandardErrorPath = "/tmp/open-webui.log";
-    };
-  };
 }
