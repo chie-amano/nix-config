@@ -4,6 +4,8 @@
   home.stateVersion = "26.05";
 
   home.packages = with pkgs; [
+    colima
+    docker
     ghq
     ollama
     pixi
@@ -29,6 +31,18 @@
     initContent = ''
       eval "$(pixi completion --shell zsh)"
     '';
+  };
+
+  # Colima（Docker ランタイム）をバックグラウンドで自動起動
+  launchd.agents.colima = {
+    enable = true;
+    config = {
+      ProgramArguments = [ "${pkgs.colima}/bin/colima" "start" "--foreground" ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/colima.log";
+      StandardErrorPath = "/tmp/colima.log";
+    };
   };
 
   # Start Ollama in background
