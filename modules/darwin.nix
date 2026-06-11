@@ -7,7 +7,6 @@
 
   # allow unfree packages（VS Code, etc.）
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.allowBroken = true;
 
   # Tell user info to nix-darwin
   users.users.Chie = {
