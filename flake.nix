@@ -25,6 +25,9 @@
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.users.Chie = import ./modules/home.nix;
+          users.users.Chie = {
+            home = "/Users/Chie";
+          };
         }
       ];
     };

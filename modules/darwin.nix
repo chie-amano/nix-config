@@ -8,10 +8,5 @@
   # allow unfree packages（VS Code, etc.）
   nixpkgs.config.allowUnfree = true;
 
-  # Tell user info to nix-darwin
-  users.users.Chie = {
-    home = "/Users/Chie";
-  };
-
   system.stateVersion = 5;
 }
