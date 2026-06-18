@@ -99,6 +99,7 @@ sudo darwin-rebuild switch --flake .#Chies-MacBook-Pro
 ### Step 5 — Download LLM models
 
 Ollama starts automatically. Pull one or both of these recommended models for translation and grammar correction:
+Refer the tip section to choose how to find best LLM model on your PC.
 
 ```bash
 # High quality, multilingual (~15 GB — takes a while)
@@ -276,3 +277,17 @@ nix --extra-experimental-features "nix-command flakes" run nix-darwin#darwin-uni
 ```
 
 Reopen the terminal and your Mac is back to its pre-Nix state.
+
+## Tips
+
+### How to choose appropreate model for your machine
+
+A tool [whichllm](https://github.com/Andyyyy64/whichllm) support to choose the best local LLM model
+on your specific hardware setups.
+
+To use,
+
+```bash
+nix run nixpkgs#whichllm
+```
+
