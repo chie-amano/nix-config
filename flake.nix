@@ -11,9 +11,13 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, ... }: {
+  outputs = { self, nixpkgs, nix-darwin, home-manager, nixvim, ... }: {
 
     # Chie's full setup
     darwinConfigurations."Chies-MacBook-Pro" = nix-darwin.lib.darwinSystem {
@@ -24,6 +28,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
+          home-manager.sharedModules = [ nixvim.homeModules.nixvim ];
           home-manager.users.Chie = import ./modules/home.nix;
           users.users.Chie = {
             home = "/Users/Chie";
