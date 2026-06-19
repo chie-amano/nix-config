@@ -7,5 +7,6 @@
 
   programs.nixvim = {
     enable = true;
+    version.enableNixpkgsReleaseCheck = false;
   };
 }
