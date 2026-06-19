@@ -2,13 +2,13 @@
   description = "Chie's macOS development environment";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.11-darwin";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
     nix-darwin = {
-      url = "github:nix-darwin/nix-darwin/master";
+      url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
-      url = "github:nix-community/home-manager/master";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixvim = {
@@ -56,7 +56,7 @@
     #         imports = [ ./modules/home-llm.nix ];
     #         home.username = "yourname";
     #         home.homeDirectory = "/Users/yourname";
-    #         home.stateVersion = "26.11";
+    #         home.stateVersion = "26.05";
     #       };
     #       users.users.yourname = {
     #         home = "/Users/yourname";
