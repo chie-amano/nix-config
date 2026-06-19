@@ -12,6 +12,6 @@
   # Chie's git identity
   programs.git.settings.user = {
     name = "Chie Amano";
-    email = "achse603@gmail.com";
+    email = "93822689+chie-amano@users.noreply.github.com";
   };
 }
