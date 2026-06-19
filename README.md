@@ -288,6 +288,6 @@ on your specific hardware setups.
 To use,
 
 ```bash
-nix run nixpkgs#whichllm
+nix run nixpkgs#uv uvx whichllm@latest
 ```
 
