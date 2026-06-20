@@ -2,6 +2,20 @@
 
 macOS development environment for Chie's MacBook Pro, managed with Nix + nix-darwin + home-manager.
 
+## Two layers: system (sudo) vs. user (no sudo)
+
+The configuration is split into two independent layers so that everyday app
+changes never require `sudo`:
+
+| Layer | Tool | Command | When |
+|-------|------|---------|------|
+| **System** | nix-darwin | `sudo darwin-rebuild switch --flake .#Chies-MacBook-Pro` | Rare — only Nix daemon / system settings (`darwin.nix`) |
+| **User** | home-manager (standalone) | `home-manager switch --flake .#Chie` | Often — every app / dotfile change, **no sudo** |
+
+Almost everything Chie edits day-to-day (ghostty, tmux, git, nixvim, lazygit,
+LLM tools, …) lives in the **user** layer, so the normal workflow is just
+`home-manager switch` with no `sudo`.
+
 ## What this sets up
 
 | Module | Contents | Audience |
@@ -77,22 +91,34 @@ If they differ, update `flake.nix` and `modules/home.nix` accordingly.
 
 ### Step 4 — Apply the configuration
 
-First time only:
+The configuration has two layers. Apply the **system** layer once (needs
+`sudo`), then the **user** layer (no `sudo`).
+
+**4a — System layer (nix-darwin) — first time only:**
 
 ```bash
-# Replace #Chies-MacBook-Pro to your LocalHostName before run the following command.
+# Replace #Chies-MacBook-Pro to your LocalHostName before running the command.
 sudo nix run nix-darwin -- switch --flake .#Chies-MacBook-Pro
 ```
 
-Subsequent updates:
+This sets up Nix's system-level settings. You will only need to repeat this
+when `modules/darwin.nix` changes (rare).
+
+**4b — User layer (home-manager) — first time:**
 
 ```bash
-# Replace #Chies-MacBook-Pro to your LocalHostName before run the following command.
-nix flake update
-sudo darwin-rebuild switch --flake .#Chies-MacBook-Pro
+nix run home-manager/release-26.05 -- switch --flake .#Chie
 ```
 
-> `nix flake update` updates `flake.lock` as your own user (not root) before running `darwin-rebuild` as root. This keeps `flake.lock` owned by you.
+After this first run, the `home-manager` command is on your PATH, so every
+later change is applied **without sudo**:
+
+```bash
+home-manager switch --flake .#Chie
+```
+
+> Updating package versions: run `nix flake update` first (updates `flake.lock`
+> as your own user), then `home-manager switch --flake .#Chie`.
 
 ---
 
@@ -161,19 +187,20 @@ cd ~/ghq/github.com/chie-amano/nix-config
 
 ### Step 3 — Add your configuration to flake.nix
 
-Find the commented-out template near the bottom of `flake.nix` and uncomment it.
-Replace two values:
+Find the commented-out `homeConfigurations` template near the bottom of
+`flake.nix` and uncomment it. Replace one value:
 
 | Placeholder | How to find your value |
 |-------------|----------------------|
-| `your-macbook` | `scutil --get LocalHostName` |
 | `yourname` | `whoami` |
 
-### Step 4 — Apply
+### Step 4 — Apply (no sudo)
 
 ```bash
-sudo nix run nix-darwin -- switch --flake .#your-macbook
+nix run home-manager/release-26.05 -- switch --flake .#yourname
 ```
+
+Later updates just need `home-manager switch --flake .#yourname`.
 
 ### Step 5 — Download a model and start Open WebUI
 
@@ -183,9 +210,17 @@ Same as steps 5–6 above.
 
 ## Updating the configuration
 
+Everyday app / dotfile changes (the user layer) — **no sudo**:
+
 ```bash
 cd ~/ghq/github.com/chie-amano/nix-config
-nix flake update
+# (optional) bump package versions: nix flake update
+home-manager switch --flake .#Chie
+```
+
+System-level changes (only when `modules/darwin.nix` changes) — needs sudo:
+
+```bash
 sudo darwin-rebuild switch --flake .#Chies-MacBook-Pro
 ```
 
@@ -215,13 +250,14 @@ jupyter lab
 
 ```
 .
-├── flake.nix               # entry point; also contains colleague template
+├── flake.nix               # entry point: darwinConfigurations (system)
+│                           # + homeConfigurations (user); colleague template
 ├── modules/
-│   ├── darwin.nix          # minimal nix-darwin system settings
+│   ├── darwin.nix          # minimal nix-darwin system settings (sudo layer)
 │   ├── home-llm.nix        # LLM environment (shareable)
 │   ├── home-dev.nix        # development tools (shareable)
 │   ├── home-personal.nix   # personal tools — Chie only
-│   └── home.nix            # Chie's full setup (imports all three)
+│   └── home.nix            # Chie's full home-manager setup (imports all three)
 ├── docs/
 │   └── adr/                # architecture decision records
 └── README.md

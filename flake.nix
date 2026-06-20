@@ -17,53 +17,61 @@
     };
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, nixvim, ... }: {
-
-    # Chie's full setup
-    darwinConfigurations."Chies-MacBook-Pro" = nix-darwin.lib.darwinSystem {
+  outputs = { self, nixpkgs, nix-darwin, home-manager, nixvim, ... }:
+    let
       system = "aarch64-darwin";
-      modules = [
-        ./modules/darwin.nix
-        home-manager.darwinModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.sharedModules = [ nixvim.homeModules.nixvim ];
-          home-manager.users.Chie = import ./modules/home.nix;
-          users.users.Chie = {
-            home = "/Users/Chie";
-          };
-        }
-      ];
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true; # VS Code, etc.
+      };
+    in
+    {
+
+      # -----------------------------------------------------------------------
+      # System layer — nix-darwin. Applied rarely and requires sudo.
+      # Bootstraps Nix itself and basic system settings only (see darwin.nix).
+      # home-manager is intentionally NOT wired in here: all user/app config
+      # lives in the standalone home-manager output below so that day-to-day
+      # changes never need sudo.
+      #   sudo darwin-rebuild switch --flake .#Chies-MacBook-Pro
+      # -----------------------------------------------------------------------
+      darwinConfigurations."Chies-MacBook-Pro" = nix-darwin.lib.darwinSystem {
+        inherit system;
+        modules = [ ./modules/darwin.nix ];
+      };
+
+      # -----------------------------------------------------------------------
+      # User layer — home-manager (standalone). Applied often, NO sudo.
+      # Chie's apps and dotfiles. After editing any module, run:
+      #   home-manager switch --flake .#Chie
+      # -----------------------------------------------------------------------
+      homeConfigurations."Chie" = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [
+          nixvim.homeModules.nixvim
+          ./modules/home.nix
+        ];
+      };
+
+      # -----------------------------------------------------------------------
+      # Template for colleagues who only need the local LLM environment.
+      # Standalone home-manager — NO sudo required.
+      # Steps:
+      #   1. Replace "yourname" with: whoami
+      #   2. Run: nix run home-manager/release-26.05 -- switch --flake .#yourname
+      #      (subsequent updates: home-manager switch --flake .#yourname)
+      # -----------------------------------------------------------------------
+      # homeConfigurations."yourname" = home-manager.lib.homeManagerConfiguration {
+      #   inherit pkgs;
+      #   modules = [
+      #     ./modules/home-llm.nix
+      #     {
+      #       home.username = "yourname";
+      #       home.homeDirectory = "/Users/yourname";
+      #       home.stateVersion = "26.05";
+      #     }
+      #   ];
+      # };
+
     };
-
-    # -------------------------------------------------------------------------
-    # Template for colleagues who only need the local LLM environment.
-    # Steps:
-    #   1. Replace "your-macbook" with: scutil --get LocalHostName
-    #   2. Replace "yourname" with: whoami
-    #   3. Run: sudo nix run nix-darwin -- switch --flake .#your-macbook
-    # -------------------------------------------------------------------------
-    # darwinConfigurations."your-macbook" = nix-darwin.lib.darwinSystem {
-    #   system = "aarch64-darwin";
-    #   modules = [
-    #     ./modules/darwin.nix
-    #     home-manager.darwinModules.home-manager
-    #     {
-    #       home-manager.useGlobalPkgs = true;
-    #       home-manager.useUserPackages = true;
-    #       home-manager.users.yourname = {
-    #         imports = [ ./modules/home-llm.nix ];
-    #         home.username = "yourname";
-    #         home.homeDirectory = "/Users/yourname";
-    #         home.stateVersion = "26.05";
-    #       };
-    #       users.users.yourname = {
-    #         home = "/Users/yourname";
-    #       };
-    #     }
-    #   ];
-    # };
-
-  };
 }
