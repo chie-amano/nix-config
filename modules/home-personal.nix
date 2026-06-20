@@ -92,12 +92,13 @@
 
   programs.ghostty = {
     enable = true;
+    package = pkgs.ghostty-bin;
     enableFishIntegration = true;
     settings = {
       # ctrl + shift + , to reload ghostty settings.
       # https://ghostty.org/docs/config/reference
       adjust-cursor-thickness = 6;
-      theme = "dark";
+      theme = "Ghostty Default Style Dark";
       command = "fish";
     };
   };
