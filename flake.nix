@@ -6,6 +6,9 @@
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     llm-agents.inputs.nixpkgs.follows = "nixpkgs";
     llm-agents.url = "github:numtide/llm-agents.nix";
+    # Makes Nix-installed GUI apps (e.g. ghostty) discoverable by Spotlight,
+    # Launchpad and the Dock by creating trampoline .app bundles in ~/Applications.
+    mac-app-util.url = "github:hraban/mac-app-util";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
@@ -13,7 +16,7 @@
     nixvim.url = "github:nix-community/nixvim";
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, nixvim, llm-agents, ... }:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, nixvim, llm-agents, mac-app-util, ... }:
     let
       system = "aarch64-darwin";
       pkgs = import nixpkgs {
@@ -47,6 +50,7 @@
         inherit pkgs;
         modules = [
           nixvim.homeModules.nixvim
+          mac-app-util.homeManagerModules.default
           ./modules/home.nix
         ];
       };

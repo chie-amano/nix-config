@@ -27,6 +27,10 @@ LLM tools, …) lives in the **user** layer, so the normal workflow is just
 
 The specific applications to be installed are described in each module file.
 
+GUI apps installed this way (e.g. ghostty) are made discoverable from
+Spotlight, Launchpad and the Dock via [mac-app-util](https://github.com/hraban/mac-app-util),
+which creates app aliases under `~/Applications` on every `home-manager switch`.
+
 If you want to install the minimum necessary configuration to run Local LLM,
 modify the section for Chie in `flake.nix` to refer to the commented-out section.
 (This is explained in Step 3.)
