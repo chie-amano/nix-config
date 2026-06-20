@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ pkgs, llm-agents, ... }: {
   # Personal tools and preferences (not intended for sharing)
   # Add tmux, vim, shell aliases, etc. here
   programs.tmux = {
@@ -111,5 +111,45 @@
     };
   };
 
+  programs.claude-code = {
+    enable = true;
+    # pkgs.claude-code comes from the llm-agents overlay added in flake.nix,
+    # so it tracks the latest release instead of the nixpkgs-pinned version.
+    package = pkgs.claude-code;
+    settings = {
+      theme = "dark";
+      autoUpdates = false;
+      includeCoAuthoredBy = false;
+      autoCompactEnabled = false;
+      enableAllProjectMcpServers = true;
+      feedbackSurveyState.lastShownTime = 1754089004345;
+      permissions = {
+        deny = [
+          "Bash(rm -rf /*)"
+          "Bash(rm -rf /)"
+          "Bash(sudo rm -:*)"
+          "Bash(chmod 777 /*)"
+          "Bash(chmod -R 777 /*)"
+          "Bash(dd if=:*)"
+          "Bash(mkfs.:*)"
+          "Bash(fdisk -:*)"
+          "Bash(format -:*)"
+          "Bash(shutdown -:*)"
+          "Bash(reboot -:*)"
+          "Bash(halt -:*)"
+          "Bash(poweroff -:*)"
+          "Bash(killall -:*)"
+          "Bash(pkill -:*)"
+          "Bash(nc -l -:*)"
+          "Bash(ncat -l -:*)"
+          "Bash(netcat -l -:*)"
+          "Bash(rm -rf ~:*)"
+          "Bash(rm -rf $HOME:*)"
+          "Bash(rm -rf ~/.ssh*)"
+          "Bash(rm -rf ~/.config*)"
+        ];
+      };
+    };
+  };
 
 }
