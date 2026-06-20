@@ -99,7 +99,10 @@
       # https://ghostty.org/docs/config/reference
       adjust-cursor-thickness = 6;
       theme = "Ghostty Default Style Dark";
-      command = "fish";
+      # Absolute path so GUI launches (Spotlight/Launchpad) work too: the app
+      # starts via `bash --noprofile --norc` without ~/.nix-profile/bin on PATH,
+      # so a bare `fish` is not found. The store path keeps following rebuilds.
+      command = "${pkgs.fish}/bin/fish";
     };
   };
   
