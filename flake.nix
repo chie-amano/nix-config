@@ -23,7 +23,10 @@
         inherit system;
         config.allowUnfree = true; # VS Code, etc.
         # llm-agents: tracks latest claude-code & friends (see home-dev.nix)
-        overlays = [ llm-agents.overlays.default ];
+        overlays = [
+          llm-agents.overlays.default
+          (_final: _prev: { claude-code = llm-agents.packages.${system}.claude-code; })
+        ];
       };
     in
     {

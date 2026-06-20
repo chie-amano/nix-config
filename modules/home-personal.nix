@@ -1,4 +1,4 @@
-{ pkgs, llm-agents, ... }: {
+{ pkgs, ... }: {
   # Personal tools and preferences (not intended for sharing)
   # Add tmux, vim, shell aliases, etc. here
   programs.tmux = {
@@ -102,7 +102,13 @@
       command = "fish";
     };
   };
-    programs.lazygit = {
+  
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+  };
+
+  programs.lazygit = {
     enable = true;
     settings = {
       git.pagers = [
