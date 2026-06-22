@@ -1,6 +1,142 @@
 { pkgs, ... }: {
   # Personal tools and preferences (not intended for sharing)
   # Add tmux, vim, shell aliases, etc. here
+  programs.claude-code = {
+    enable = true;
+    # pkgs.claude-code comes from the llm-agents overlay added in flake.nix,
+    # so it tracks the latest release instead of the nixpkgs-pinned version.
+    package = pkgs.claude-code;
+    settings = {
+      theme = "dark";
+      autoUpdates = false;
+      includeCoAuthoredBy = false;
+      autoCompactEnabled = false;
+      enableAllProjectMcpServers = true;
+      feedbackSurveyState.lastShownTime = 1754089004345;
+      permissions = {
+        deny = [
+          "Bash(rm -rf /*)"
+          "Bash(rm -rf /)"
+          "Bash(sudo rm -:*)"
+          "Bash(chmod 777 /*)"
+          "Bash(chmod -R 777 /*)"
+          "Bash(dd if=:*)"
+          "Bash(mkfs.:*)"
+          "Bash(fdisk -:*)"
+          "Bash(format -:*)"
+          "Bash(shutdown -:*)"
+          "Bash(reboot -:*)"
+          "Bash(halt -:*)"
+          "Bash(poweroff -:*)"
+          "Bash(killall -:*)"
+          "Bash(pkill -:*)"
+          "Bash(nc -l -:*)"
+          "Bash(ncat -l -:*)"
+          "Bash(netcat -l -:*)"
+          "Bash(rm -rf ~:*)"
+          "Bash(rm -rf $HOME:*)"
+          "Bash(rm -rf ~/.ssh*)"
+          "Bash(rm -rf ~/.config*)"
+        ];
+      };
+    };
+  };
+
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+  };
+
+  programs.eza = {
+    enable = true;
+  };
+
+  programs.fish = {
+    enable = true;
+    shellAbbrs = {
+      # File operations with eza
+      l = "eza --long --classify --all --time-style=long-iso --group-directories-first";
+      ll = "eza --long --classify --all --time-style=long-iso --group-directories-first";
+      llt = "eza --long --classify --all --time-style=long-iso --group-directories-first --sort=changed";
+      treee = "eza --tree --classify=auto";
+      treel = "eza --tree --classify=auto --long";
+      # gitstats = "fzf --preview 'git -C {} status -s && echo ----- && git -C {} lo -n 5 --oneline' --bind 'enter:execute(cd {} && $SHELL)+reload(ghq list -p)'";
+
+
+      # Safe file operations
+      rm = "rm -I";
+
+      # Directory navigation
+      ".." = "cd ..";
+    };
+    interactiveShellInit = ''
+      # Add fish builtin completions to the completion path
+      set -l builtin_completions $__fish_data_dir/completions
+      if not contains $builtin_completions $fish_complete_path
+        set -gx fish_complete_path $builtin_completions $fish_complete_path
+      end
+
+      # https://fishshell.com/docs/current/cmds/fish_git_prompt.html
+      set -g __fish_git_prompt_char_stateseparator ' '
+      set -g __fish_git_prompt_showdirtystate 1
+      set -g __fish_git_prompt_showuntrackedfiles 1
+      set -g __fish_git_prompt_showupstreamHEAD 1
+      set -g __fish_git_prompt_show_informative_status 1
+      set -g __fish_git_prompt_char_cleanstate '_'
+      set -g __fish_git_prompt_char_dirtystate '*'
+      set -g __fish_git_prompt_char_invalidstate '#'
+      set -g __fish_git_prompt_char_stagedstate '+'
+      set -g __fish_git_prompt_char_stashstate '$'
+      set -g __fish_git_prompt_char_untrackedfiles '?'
+      set -g fish_prompt_pwd_dir_length 3
+      set -g fish_prompt_pwd_full_dirs 3
+      source ${./fish_prompt.fish}
+      function fish_title
+        set -q argv[1]; or set argv fish
+        echo $argv: (prompt_pwd);
+      end
+      function we
+        if test -f /proc/version && string match -qi "*microsoft*" (cat /proc/version)
+          /mnt/c/Windows/explorer.exe (wslpath -w "$PWD")
+        else
+          echo "Error: 'we' command is only available on WSL (Windows Subsystem for Linux)"
+          return 1
+        end
+      end
+    '';
+  };
+
+  programs.ghostty = {
+    enable = true;
+    package = pkgs.ghostty-bin;
+    enableFishIntegration = true;
+    settings = {
+      # ctrl + shift + , to reload ghostty settings.
+      # https://ghostty.org/docs/config/reference
+      adjust-cursor-thickness = 6;
+      theme = "Ghostty Default Style Dark";
+      # Absolute path so GUI launches (Spotlight/Launchpad) work too: the app
+      # starts via `bash --noprofile --norc` without ~/.nix-profile/bin on PATH,
+      # so a bare `fish` is not found. The store path keeps following rebuilds.
+      command = "${pkgs.fish}/bin/fish";
+    };
+  };
+  
+  programs.lazygit = {
+    enable = true;
+    settings = {
+      git.pagers = [
+        { pager = "delta --dark --paging=never"; }
+      ];
+    };
+  };
+
+
+  programs.nixvim = {
+    enable = true;
+    version.enableNixpkgsReleaseCheck = false;
+  };
+
   programs.tmux = {
     enable = true;
     shortcut = "a";
@@ -83,82 +219,8 @@
     '';
   };
 
-  programs.nixvim = {
+  programs.zoxide = {
     enable = true;
-    version.enableNixpkgsReleaseCheck = false;
-  };
-
-  programs.fish.enable = true;
-
-  programs.ghostty = {
-    enable = true;
-    package = pkgs.ghostty-bin;
     enableFishIntegration = true;
-    settings = {
-      # ctrl + shift + , to reload ghostty settings.
-      # https://ghostty.org/docs/config/reference
-      adjust-cursor-thickness = 6;
-      theme = "Ghostty Default Style Dark";
-      # Absolute path so GUI launches (Spotlight/Launchpad) work too: the app
-      # starts via `bash --noprofile --norc` without ~/.nix-profile/bin on PATH,
-      # so a bare `fish` is not found. The store path keeps following rebuilds.
-      command = "${pkgs.fish}/bin/fish";
-    };
   };
-  
-  programs.delta = {
-    enable = true;
-    enableGitIntegration = true;
-  };
-
-  programs.lazygit = {
-    enable = true;
-    settings = {
-      git.pagers = [
-        { pager = "delta --dark --paging=never"; }
-      ];
-    };
-  };
-
-  programs.claude-code = {
-    enable = true;
-    # pkgs.claude-code comes from the llm-agents overlay added in flake.nix,
-    # so it tracks the latest release instead of the nixpkgs-pinned version.
-    package = pkgs.claude-code;
-    settings = {
-      theme = "dark";
-      autoUpdates = false;
-      includeCoAuthoredBy = false;
-      autoCompactEnabled = false;
-      enableAllProjectMcpServers = true;
-      feedbackSurveyState.lastShownTime = 1754089004345;
-      permissions = {
-        deny = [
-          "Bash(rm -rf /*)"
-          "Bash(rm -rf /)"
-          "Bash(sudo rm -:*)"
-          "Bash(chmod 777 /*)"
-          "Bash(chmod -R 777 /*)"
-          "Bash(dd if=:*)"
-          "Bash(mkfs.:*)"
-          "Bash(fdisk -:*)"
-          "Bash(format -:*)"
-          "Bash(shutdown -:*)"
-          "Bash(reboot -:*)"
-          "Bash(halt -:*)"
-          "Bash(poweroff -:*)"
-          "Bash(killall -:*)"
-          "Bash(pkill -:*)"
-          "Bash(nc -l -:*)"
-          "Bash(ncat -l -:*)"
-          "Bash(netcat -l -:*)"
-          "Bash(rm -rf ~:*)"
-          "Bash(rm -rf $HOME:*)"
-          "Bash(rm -rf ~/.ssh*)"
-          "Bash(rm -rf ~/.config*)"
-        ];
-      };
-    };
-  };
-
 }
